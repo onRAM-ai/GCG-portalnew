@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 33% 2%;
+    --foreground: 0 0% 98%;
+    --card: 240 33% 3%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 33% 3%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 35 95% 50%;
+    --primary-foreground: 240 33% 2%;
+    --secondary: 240 33% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 33% 15%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 35 95% 50%;
+    --accent-foreground: 240 33% 2%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 33% 15%;
+    --input: 240 33% 15%;
+    --ring: 35 95% 50%;
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased relative min-h-screen;
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Layout adjustments */
+.admin-layout {
+  @apply flex min-h-screen;
+}
+
+.admin-sidebar {
+  @apply fixed inset-y-0 left-0 w-64 bg-background/50 backdrop-blur-xl border-r border-primary/10;
+}
+
+.admin-content {
+  @apply flex-1 ml-64;
+}
+
+/* Form elements */
+.form-input {
+  @apply flex h-11 w-full rounded-md border border-input bg-background px-3 py-2
+    text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium
+    placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2
+    focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.form-input-error {
+  @apply border-destructive focus-visible:ring-destructive;
+}
+
+.form-label {
+  @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+}
+
+.form-message {
+  @apply text-sm text-destructive mt-1;
+}
+
+/* Card styles */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,170,0,0.15)] hover:border-[#ffaa00];
+  backdrop-filter: blur(8px);
+}
+
+.glass-card {
+  @apply bg-black/20 backdrop-blur-lg border border-white/10;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Typography */
+.gold-glow {
+  text-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted/80;
+}
