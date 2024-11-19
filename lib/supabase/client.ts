@@ -1,77 +1,68 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { type Database } from '@/lib/database.types';
-import { getSupabaseConfig } from './config';
 
 let supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
+const customStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem(key);
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(key, value);
+  },
+  removeItem: (key: string): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(key);
+  },
+};
 
 export function getSupabaseClient() {
   if (supabaseInstance) {
     return supabaseInstance;
   }
 
-  const config = getSupabaseConfig();
-  
-  try {
-    supabaseInstance = createBrowserClient<Database>(
-      config.url,
-      config.anonKey,
-      {
-        ...config.options,
-        auth: {
-          ...config.options.auth,
-          detectSessionInUrl: true,
-          flowType: 'pkce',
-          debug: process.env.NODE_ENV === 'development',
-          persistSession: true,
-          storageKey: 'sb-auth-token',
-          storage: {
-            getItem: (key) => {
-              try {
-                return window?.localStorage.getItem(key) || 
-                       window?.sessionStorage.getItem(key);
-              } catch {
-                return null;
-              }
-            },
-            setItem: (key, value) => {
-              try {
-                window?.localStorage.setItem(key, value);
-                window?.sessionStorage.setItem(key, value);
-              } catch {
-                console.warn('Failed to save auth state');
-              }
-            },
-            removeItem: (key) => {
-              try {
-                window?.localStorage.removeItem(key);
-                window?.sessionStorage.removeItem(key);
-              } catch {
-                console.warn('Failed to remove auth state');
-              }
-            },
-          },
-          autoRefreshToken: true,
-          cookieOptions: {
-            name: 'sb-auth-token',
-            lifetime: 60 * 60 * 24 * 7, // 1 week
-            domain: typeof window !== 'undefined' ? window.location.hostname : '',
-            sameSite: 'lax',
-            path: '/',
-            secure: process.env.NODE_ENV === 'production',
-          },
-        },
-        realtime: {
-          params: {
-            eventsPerSecond: 2,
-          },
-        },
-      }
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      'Missing environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be defined'
     );
-    return supabaseInstance;
-  } catch (error) {
-    console.error('Failed to initialize Supabase client:', error);
-    throw error;
   }
+
+  supabaseInstance = createBrowserClient<Database>(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        debug: process.env.NODE_ENV === 'development',
+        storage: customStorage,
+        cookieOptions: {
+          name: 'sb-auth-token',
+          lifetime: 60 * 60 * 24 * 7, // 1 week
+          domain: typeof window !== 'undefined' ? window.location.hostname : undefined,
+          sameSite: 'lax',
+          path: '/',
+        },
+      },
+      global: {
+        headers: {
+          'x-application-name': 'gcg-shift-management',
+        },
+      },
+      db: {
+        schema: 'public',
+      },
+    }
+  );
+
+  return supabaseInstance;
 }
 
 // Export a singleton instance

@@ -52,17 +52,13 @@ export function AuthProvider({
               ...profile,
               email: session.user.email,
             });
-
-            // Redirect to appropriate dashboard
-            const redirectPath = profile.role === 'admin' ? '/admin'
-              : profile.role === 'venue' ? '/venue'
-              : '/dashboard';
-            router.push(redirectPath);
           }
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        setUser(null);
+        if (mounted) {
+          setUser(null);
+        }
       } finally {
         if (mounted) {
           setLoading(false);
@@ -88,13 +84,6 @@ export function AuthProvider({
                 ...profile,
                 email: session.user.email,
               });
-
-              if (event === 'SIGNED_IN') {
-                const redirectPath = profile.role === 'admin' ? '/admin'
-                  : profile.role === 'venue' ? '/venue'
-                  : '/dashboard';
-                router.push(redirectPath);
-              }
             }
           } catch (error) {
             console.error('Profile fetch error:', error);
@@ -105,7 +94,6 @@ export function AuthProvider({
         } else {
           if (mounted) {
             setUser(null);
-            router.push('/login');
           }
         }
       }
